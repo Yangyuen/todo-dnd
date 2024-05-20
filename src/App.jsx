@@ -148,7 +148,7 @@ const App = () => {
               key={item.id}
               onClick={() => moveItemToMainList(item.id, "Fruit")}
             >
-              {item.name} {item.timeLeft}
+              {item.name}
             </button>
           </div>
         ))}
@@ -163,7 +163,7 @@ const App = () => {
               key={item.id}
               onClick={() => moveItemToMainList(item.id, "Vegetable")}
             >
-              {item.name} {item.timeLeft}
+              {item.name}
             </button>
           </div>
         ))}
