@@ -45,12 +45,16 @@ const App = () => {
   // สร้างตัวแปรเก็บค่าพารามิเตอร์ itemId, itemType
   const moveItemToCategory = (itemId, itemType) => {
     // ค้นหา item ใน mainList ที่มี id เท่ากับ itemId
+
     const item = mainList.find((item) => item.id === itemId);
     // ตรวจสอบว่า (item) มีค่า (ไม่เป็น underfined หรือ null )
+
     if (item) {
       // สร้าง Object ใหม่ที่คัดลอก item ทั้งหมด และตั้งค่า time = 5
+
       const updatedItem = { ...item, timeLeft: 5 };
       // ใช้ switch เพื่อเลือกประเภทของ itemType
+
       switch (itemType) {
         // กรณีประเภทเป็น Fruit
         case "Fruit":
@@ -79,7 +83,7 @@ const App = () => {
           prevList
             .map((item) => {
               // ถ้า timeleft มากกว่า 1
-              if (item.timeLeft > 1) {
+              if (item.timeLeft > 0) {
                 // ทำการคัดลอก item ทั้งหมด  และลดค่า time ลงทีละ 1
                 return { ...item, timeLeft: item.timeLeft - 1 };
               } else {
@@ -100,7 +104,7 @@ const App = () => {
         (prevList) =>
           prevList
             .map((item) => {
-              if (item.timeLeft > 1) {
+              if (item.timeLeft > 0) {
                 // ทำการคัดลอก item ทั้งหมด  และลดค่า time ลงทีละ 1
                 return { ...item, timeLeft: item.timeLeft - 1 };
               } else {
@@ -148,7 +152,7 @@ const App = () => {
               key={item.id}
               onClick={() => moveItemToMainList(item.id, "Fruit")}
             >
-              {item.name}
+              {item.name} {item.timeLeft}
             </button>
           </div>
         ))}
@@ -163,7 +167,7 @@ const App = () => {
               key={item.id}
               onClick={() => moveItemToMainList(item.id, "Vegetable")}
             >
-              {item.name}
+              {item.name} {item.timeLeft}
             </button>
           </div>
         ))}
