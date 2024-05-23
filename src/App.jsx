@@ -5,8 +5,8 @@ const App = () => {
   const [mainList, setMainList] = useState(data[0]);
   const [fruitList, setFruitList] = useState([]);
   const [vegetableList, setVegetableList] = useState([]);
+  const [timers, setTimers] = useState({});
 
-  // รับพารามิเตอร์ itemId, itemType
   const moveItemToMainList = (itemId, itemType) => {
     // ตัวแปรสำหรับเก็บ itemId, itemType
     let itemToMove;
@@ -35,95 +35,113 @@ const App = () => {
     }
     // ตรวจสอบว่า (itemToMove) มีค่า (ไม่เป็น undefined หรือ null)
     if (itemToMove) {
+      // ทำการเคลียร์ Time ที่เกี่ยวกับ item นี้เพื่อหยุดการนับถอยหลัง
+      clearTimeout(timers[itemId]);
       // อัพเดต mainList โดยเพิ่มไอเท็มใหม่เข้าไป
       setMainList((prevList) => [
         ...prevList, //คัดลอกรายการเดิมทั้งหมดใน mainList
-        { ...itemToMove, timeLeft: undefined },
-      ]); // เพิ่ม item ใหม่ โดยตั้งค่า timeLeft เป็น underfined
+        { ...itemToMove, timeLeft: undefined },// เพิ่ม item ใหม่ โดยตั้งค่า timeLeft เป็น underfined
+      ]); 
+      // อัพเดท timers state โดยลบ timer ที่เกี่ยวข้องกับ item นี้ออก
+      setTimers((prevTimers)=>{
+        // ใช้ destructuring เพื่อสร้าง object ใหม่ที่ไม่รวม timer ที่ถูก clear ออก
+        const {[itemId]: _, ...rest} = prevTimers;
+        return rest; // คืนค่า Object ใหม่ที่ไม่รวม timer ที่ถูก clear ออก
+      })
     }
   };
   // สร้างตัวแปรเก็บค่าพารามิเตอร์ itemId, itemType
   const moveItemToCategory = (itemId, itemType) => {
     // ค้นหา item ใน mainList ที่มี id เท่ากับ itemId
-
     const item = mainList.find((item) => item.id === itemId);
     // ตรวจสอบว่า (item) มีค่า (ไม่เป็น underfined หรือ null )
-
     if (item) {
       // สร้าง Object ใหม่ที่คัดลอก item ทั้งหมด และตั้งค่า time = 5
-
       const updatedItem = { ...item, timeLeft: 5 };
       // ใช้ switch เพื่อเลือกประเภทของ itemType
-
       switch (itemType) {
-        // กรณีประเภทเป็น Fruit
         case "Fruit":
           // ใช้ setFruitList เพื่อทำการเพิ่ม updateItem เข้าไปใน fruitList
           setFruitList((prevList) => [...prevList, updatedItem]);
-          break;
-        // กรณีประเภทเป็น Vegetable
+          break; //break case Fruit
         case "Vegetable":
           // ใช้ setVegetableList เพื่อทำการเพิ่ม updateItem เข้าไปใน vegetableList
           setVegetableList((prevList) => [...prevList, updatedItem]);
-          break;
+          break; //break case Vegetable
         default:
-          break; // หาก itemType ไม่ใช่ 'Fruit' หรือ 'Vegetable' ไม่ต้องทำอะไร
+          break;  // หาก itemType ไม่ใช่ 'Fruit' หรือ 'Vegetable' ไม่ต้องทำอะไร
       }
       // ใช้ setMainList ทำการอัพเดท MainList โดยลบ item ที่มี id ตรงกับ itemId
       setMainList((prevList) => prevList.filter((item) => item.id !== itemId));
+  
+      // สร้างตัวแปร timerId เพื่อเรียกใช้ เมื่อเวลาครบตามที่กำหนด
+      const timerId = setTimeout(() => {
+        // ใช้ switch เพื่อเลือกประเภทของ itemType
+        switch (itemType) {
+          // กรณี Type เป็น fruit
+          case "Fruit":
+            // ใช้ setFruitList เพื่อลบ item ออกจา fruitList โดยใช้ filter ลบ id ที่ตรงกับ itemId
+            setFruitList((prevList) =>
+              prevList.filter((item) => item.id !== itemId)
+            );
+            break; // break case fruit
+          // กรณี Type เป็น vegetable
+          case "Vegetable": 
+            // ใช้ setVegetableList เพื่อลบ item ออกจา vegetableList โดยใช้ filter ลบ id ที่ตรงกับ itemId
+            setVegetableList((prevList) =>
+              prevList.filter((item) => item.id !== itemId)
+            );
+            break; // break case vegetable
+          default:
+            break; // หาก itemType ไม่ใช่ 'Fruit' หรือ 'Vegetable' ไม่ต้องทำอะไร
+        }
+        // ใช้ setMainList ทำการอัพเดท MainList
+        setMainList((prevList) => {
+          // เพิ่มเฉพาะเมื่อ item ยังไม่อยู่ใน MainList
+          if (!prevList.some((prevItem) => prevItem.id === updatedItem.id)) {
+            return [...prevList, updatedItem];
+          }
+          return prevList;
+        });
+        
+        // อัพเดท timers state โดยลบ timer ที่เกี่ยวข้องกับ item นี้ออก
+      setTimers((prevTimers)=>{
+        // ใช้ destructuring เพื่อสร้าง object ใหม่ที่ไม่รวม timer ที่ถูก clear ออก
+        const {[itemId]: _, ...rest} = prevTimers;
+        return rest; // คืนค่า Object ใหม่ที่ไม่รวม timer ที่ถูก clear ออก
+        })
+      }, 5000);
+      // อัพเดต timers state โดยเพิ่ม timer ใหม่เข้าไป
+      setTimers((prevTimers) => ({
+        ...prevTimers, // คัดลอก timers เดิมทั้งหมด
+        [itemId]: timerId, // เพิ่ม timer ใหม่สำหรับ item นี้ โดยใช้ itemId เป็น key และ timerId เป็น value
+      }));
     }
   };
+  
 
   useEffect(() => {
-    // สร้างตัวแปร timer ที่จะเรียกใช้ callback ทุกๆ 1 วินาที
-    const timer = setInterval(() => {
-      // ใช้ setFruitList สำหรับอัพเดท fruitList
-      setFruitList(
-        (prevList) =>
-          prevList
-            .map((item) => {
-              // ถ้า timeleft มากกว่า 1
-              if (item.timeLeft > 0) {
-                // ทำการคัดลอก item ทั้งหมด  และลดค่า time ลงทีละ 1
-                return { ...item, timeLeft: item.timeLeft - 1 };
-              } else {
-                //ถ้า time ของ item เหลือ <= 1
-                // ใช้ setMainList ทำการย้าย item ไปที่ mainList และตั้งค่า time เป็น Undefined
-                setMainList((mainPrevList) => [
-                  ...mainPrevList,
-                  { ...item, timeLeft: undefined },
-                ]);
-                // คืนค่า null เพื่อให้ลบ item ออกจาก fruitList
-                return null;
-              }
-            })
-            .filter(Boolean) // ใช้กรองค่า null ออกจากผลลัพธ์ของ 'map'
+    // สร้างตัวแปร interval ที่จะทำงานทุก ๆ 1 วินาที
+    const interval = setInterval(() => {
+      // อัพเดท fruitList
+      setFruitList((prevList) =>
+        prevList.map((item) =>
+          item.timeLeft 
+            ? { ...item, timeLeft: item.timeLeft - 1 } // ลคค่า timeLeft ลง 1 วินาที
+            : { ...item, timeLeft: undefined } // ถ้า timeLeft ไม่มีค่า ให้ตั้งเป็น undefined
+        )
       );
-      // ใช้ setVegetableList สำหรับอัพเดท vegetableList
-      setVegetableList(
-        (prevList) =>
-          prevList
-            .map((item) => {
-              if (item.timeLeft > 0) {
-                // ทำการคัดลอก item ทั้งหมด  และลดค่า time ลงทีละ 1
-                return { ...item, timeLeft: item.timeLeft - 1 };
-              } else {
-                //ถ้า time ของ item เหลือ <= 1
-                // ใช้ setMainList ทำการย้าย item ไปที่ mainList และตั้งค่า time เป็น Undefined
-                setMainList((mainPrevList) => [
-                  ...mainPrevList,
-                  { ...item, timeLeft: undefined },
-                ]);
-                // คืนค่า null เพื่อให้ลบ item ออกจาก vegetableList
-                return null;
-              }
-            })
-            .filter(Boolean) // ใช้กรองค่า null ออกจากผลลัพธ์ของ 'map'
+      setVegetableList((prevList) =>
+        prevList.map((item) =>
+          item.timeLeft 
+            ? { ...item, timeLeft: item.timeLeft - 1 }  // ลคค่า timeLeft ลง 1 วินาที
+            : { ...item, timeLeft: undefined } // ถ้า timeLeft ไม่มีค่า ให้ตั้งเป็น undefined
+        )
       );
-    }, 1000); // ตั้งเวลาเป็น 1000 มิลลิวินาที (ๅ วินาที)
-    // เรียกใช้ฟังก์ชัน clearInterval(timer) เพื่อหยุด setInterval ที่ถูกตั้งไว้
-    return () => clearInterval(timer);
-  }, []); // ให้ useEffect ทำงานเพียงครั้งเดียวหลังจาก component mount
+    }, 1000); //ตั้งค่า interval ให้ทำงานทุก ๆ 1000 มิลลิวินาที (1 วินาที)
+    // ทำการ return ฟังก์ชันที่ใช้เพื่อเคลียร์ interval
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="container py-5 d-flex d-block justify-content-between">
